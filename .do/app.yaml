@@ -1,0 +1,15 @@
+name: websocket-server
+services:
+- name: websocket
+  source_dir: /
+  github:
+    repo: your-username/websocket-server
+    branch: main
+  run_command: php websocket-server.php --host=0.0.0.0 --port=$PORT
+  environment_slug: php
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  routes:
+  - path: /
+  health_check:
+    http_path: / 

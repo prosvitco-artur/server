@@ -1,0 +1,1 @@
+web: php websocket-server.php --host=0.0.0.0 --port=$PORT 
