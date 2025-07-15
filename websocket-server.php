@@ -5,7 +5,7 @@ require_once 'vendor/autoload.php';
 use Ratchet\Server\IoServer;
 use Ratchet\Http\HttpServer;
 use Ratchet\WebSocket\WsServer;
-use WebSocket\WebSocketHandler;
+use Server\WebSocketHandler;
 
 // Отримання порту з Heroku
 $port = getenv('PORT') ?: 8080;
@@ -34,29 +34,37 @@ if (getenv('APP_ENV') === 'production') {
     }
 }
 
-// Створюємо WebSocket сервер
-$handler = new WebSocketHandler();
+try {
+    // Створюємо WebSocket сервер
+    $handler = new WebSocketHandler();
 
-$server = IoServer::factory(
-    new HttpServer(
-        new WsServer($handler)
-    ),
-    $port,
-    $host
-);
+    // Створюємо HTTP сервер з WebSocket підтримкою
+    $server = IoServer::factory(
+        new HttpServer(
+            new WsServer($handler)
+        ),
+        $port,
+        $host
+    );
 
-echo "🚀 WebSocket сервер запущено на {$host}:{$port}\n";
-echo "📡 URL: ws://{$host}:{$port}\n";
+    echo "🚀 WebSocket сервер запущено на {$host}:{$port}\n";
+    echo "📡 URL: ws://{$host}:{$port}\n";
 
-if (getenv('APP_ENV') !== 'production') {
-    echo "⏹️  Для зупинки натисніть Ctrl+C\n\n";
+    if (getenv('APP_ENV') !== 'production') {
+        echo "⏹️  Для зупинки натисніть Ctrl+C\n\n";
 
-    if ($dev) {
-        echo "📊 Статистика:\n";
-        echo "   - Підключені клієнти: " . $handler->getConnectedClientsCount() . "\n";
-        echo "   - Кімнати: " . json_encode($handler->getRoomsInfo()) . "\n\n";
+        if ($dev) {
+            echo "📊 Статистика:\n";
+            echo "   - Підключені клієнти: " . $handler->getConnectedClientsCount() . "\n";
+            echo "   - Кімнати: " . json_encode($handler->getRoomsInfo()) . "\n\n";
+        }
     }
-}
 
-// Запускаємо сервер
-$server->run(); 
+    // Запускаємо сервер
+    $server->run();
+    
+} catch (Exception $e) {
+    echo "❌ Помилка запуску сервера: " . $e->getMessage() . "\n";
+    echo "📝 Stack trace:\n" . $e->getTraceAsString() . "\n";
+    exit(1);
+} 
