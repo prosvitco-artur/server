@@ -56,7 +56,7 @@ try {
         if ($dev) {
             echo "📊 Статистика:\n";
             echo "   - Підключені клієнти: " . $handler->getConnectedClientsCount() . "\n";
-            echo "   - Кімнати: " . json_encode($handler->getRoomsInfo()) . "\n\n";
+            // echo "   - Кімнати: " . json_encode($handler->getRoomsInfo()) . "\n\n";
         }
     }
 

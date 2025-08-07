@@ -1,0 +1,19 @@
+tunnel: websocket-server
+credentials-file: ~/.cloudflared/YOUR-TUNNEL-ID.json
+
+ingress:
+  # WebSocket сервер
+  - hostname: your-domain.com
+    service: http://localhost:8080
+    originRequest:
+      # Важливо для WebSocket
+      noTLSVerify: true
+      connectTimeout: 30s
+      tlsTimeout: 30s
+      tcpKeepAlive: 30s
+      keepAliveConnections: 10
+      keepAliveTimeout: 90s
+      httpHostHeader: localhost:8080
+  
+  # Catch-all правило (обов'язково)
+  - service: http_status:404

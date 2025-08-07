@@ -8,33 +8,25 @@ use Ratchet\ConnectionInterface;
 class WebSocketHandler implements MessageComponentInterface
 {
     protected $clients;
-    protected $roomManager;
+    // protected $roomManager;
     protected $userManager;
     protected $messageHandler;
 
     public function __construct()
     {
         $this->clients = new \SplObjectStorage;
-        $this->roomManager = new RoomManager();
+        // $this->roomManager = new RoomManager();
         $this->userManager = new UserManager();
         echo "WebSocket сервер запущено!!!!\n";
     }
 
     public function onOpen(ConnectionInterface $conn)
     {
-        // Підключення нового користувача
-        // Зберігаємо нове з'єднання
         $this->clients->attach($conn);
         echo "Нове з'єднання! ({$conn->resourceId})\n";
         
-        // Ініціалізуємо message handler
-        $this->messageHandler = new MessageHandler($this->roomManager, $this->userManager, $this->clients);
+        $this->messageHandler = new MessageHandler($this->userManager, $this->clients);
         
-        // Автоматично додаємо клієнта до кімнати general
-        $this->roomManager->joinRoom($conn, 'general');
-        echo "Клієнт {$conn->resourceId} доданий до кімнати general\n";
-        
-        // Відправляємо привітання
         $this->sendToClient($conn, [
             'type' => 'welcome',
             'message' => 'Ласкаво просимо до WebSocket сервера!',
@@ -43,7 +35,7 @@ class WebSocketHandler implements MessageComponentInterface
         ]);
 
         // Відправляємо інформацію про кількість підключених клієнтів
-        $this->broadcastSystemMessage("Новий користувач підключився. Всього клієнтів: " . count($this->clients));
+        // $this->broadcastSystemMessage("Новий користувач підключився. Всього клієнтів: " . count($this->clients));
     }
 
     public function onMessage(ConnectionInterface $from, $msg)
@@ -82,7 +74,7 @@ class WebSocketHandler implements MessageComponentInterface
         $this->broadcastUsersList();
     }
 
-    public function onError(ConnectionInterface $conn, \Exception $e)
+    public function onError(ConnectionInterface $conn, \Throwable $e)
     {
         echo "Помилка: {$e->getMessage()}\n";
         $conn->close();
@@ -182,8 +174,8 @@ class WebSocketHandler implements MessageComponentInterface
         return count($this->clients);
     }
 
-    public function getRoomsInfo()
-    {
-        return $this->roomManager->getRoomsInfo();
-    }
+    // public function getRoomsInfo()
+    // {
+    //     return $this->roomManager->getRoomsInfo();
+    // }
 } 

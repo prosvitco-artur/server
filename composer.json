@@ -4,7 +4,7 @@
     "type": "project",
     "require": {
         "php": ">=8.0",
-        "cboden/ratchet": "^0.4.4",
+        "cboden/ratchet": "^0.5",
         "symfony/var-dumper": "^7.3"
     },
     "autoload": {

@@ -6,43 +6,37 @@ use Ratchet\ConnectionInterface;
 
 class MessageHandler
 {
-    protected $roomManager;
+    // protected $roomManager;
     protected $userManager;
     protected $clients;
 
-    public function __construct($roomManager, $userManager, $clients)
+    public function __construct($userManager, $clients)
     {
-        $this->roomManager = $roomManager;
+        // $this->roomManager = $roomManager;
         $this->userManager = $userManager;
         $this->clients = $clients;
     }
 
     public function handleMessage(ConnectionInterface $from, $data)
     {
-        // Додаємо метадані
         $data['timestamp'] = date('Y-m-d H:i:s');
         $data['from'] = $from->resourceId;
 
-        // Обробляємо різні типи повідомлень
         switch ($data['type']) {
             case 'message':
-                // Відправляємо повідомлення на сервер
                 return $this->handleChatMessage($from, $data);
-            case 'join_room':
-                // Приєднуємося до кімнати
-                return $this->handleJoinRoom($from, $data);
-            case 'leave_room':
-                // Покидаємо кімнату
-                return $this->handleLeaveRoom($from, $data);
-            case 'private_message':
-                // Відправляємо приватне повідомлення
-                return $this->handlePrivateMessage($from, $data);
-            case 'set_username':
-                return $this->handleSetUsername($from, $data);
-            case 'get_users':
-                return $this->handleGetUsers($from, $data);
-            case 'ping':
-                return ['type' => 'pong', 'timestamp' => date('Y-m-d H:i:s')];
+            // case 'join_room':
+            //     return $this->handleJoinRoom($from, $data);
+            // case 'leave_room':
+            //     return $this->handleLeaveRoom($from, $data);
+            // case 'private_message':
+            //     return $this->handlePrivateMessage($from, $data);
+            // case 'set_username':
+            //     return $this->handleSetUsername($from, $data);
+            // case 'get_users':
+            //     return $this->handleGetUsers($from, $data);
+            // case 'ping':
+            //     return ['type' => 'pong', 'timestamp' => date('Y-m-d H:i:s')];
             default:
                 return $this->handleChatMessage($from, $data);
         }
@@ -50,21 +44,16 @@ class MessageHandler
 
     protected function handleChatMessage(ConnectionInterface $from, $data)
     {
-        // Отримуємо поточну кімнату клієнта
         $currentRoom = $this->roomManager->getClientRoom($from);
         
-        // Додаємо ім'я користувача до повідомлення
         $username = $this->userManager->getUsername($from);
         $data['username'] = $username;
         
-        // Відправляємо повідомлення тільки клієнтам в тій самій кімнаті
         $roomClients = $this->roomManager->getRoomClients($currentRoom);
         $recipients = [];
         
         foreach ($roomClients as $client) {
-            // if ($from !== $client) {
-                $recipients[] = $client;
-            // }
+            $recipients[] = $client;
         }
         
         return [
