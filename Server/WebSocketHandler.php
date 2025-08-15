@@ -8,14 +8,12 @@ use Ratchet\ConnectionInterface;
 class WebSocketHandler implements MessageComponentInterface
 {
     protected $clients;
-    // protected $roomManager;
     protected $userManager;
     protected $messageHandler;
 
     public function __construct()
     {
         $this->clients = new \SplObjectStorage;
-        // $this->roomManager = new RoomManager();
         $this->userManager = new UserManager();
         echo "WebSocket сервер запущено!!!!\n";
     }
@@ -33,16 +31,12 @@ class WebSocketHandler implements MessageComponentInterface
             'timestamp' => date('Y-m-d H:i:s'),
             'clientId' => $conn->resourceId
         ]);
-
-        // Відправляємо інформацію про кількість підключених клієнтів
-        // $this->broadcastSystemMessage("Новий користувач підключився. Всього клієнтів: " . count($this->clients));
     }
 
     public function onMessage(ConnectionInterface $from, $msg)
     {
         echo sprintf('Повідомлення від %d: %s' . "\n", $from->resourceId, $msg);
         $data = json_decode($msg, true);
-        // echo $data;
         
         if (!$data) {
             $data = ['type' => 'message', 'content' => $msg];
@@ -59,8 +53,6 @@ class WebSocketHandler implements MessageComponentInterface
     {
         $this->clients->detach($conn);
         echo "З'єднання {$conn->resourceId} закрито\n";
-        
-        $this->roomManager->removeClientFromAllRooms($conn);
         
         $this->userManager->removeUser($conn);
         
@@ -90,23 +82,6 @@ class WebSocketHandler implements MessageComponentInterface
                 $this->sendToClient($from, $result['delivery_status']);
                 break;
                 
-            case 'room_joined':
-                $this->sendToClient($from, $result['client_message']);
-                foreach ($result['notifications'] as $notification) {
-                    $this->sendToClient($notification['client'], $notification['data']);
-                }
-                $this->broadcastUsersList();
-                break;
-                
-            case 'room_left':
-                $this->sendToClient($from, $result['client_message']);
-                break;
-                
-            case 'private_message':
-                $this->sendToClient($result['recipient'], $result['data']);
-                $this->sendToClient($from, $result['delivery_status']);
-                break;
-                
             case 'username_set':
                 $this->sendToClient($from, $result['client_message']);
                 $this->broadcastUsersList();
@@ -114,10 +89,6 @@ class WebSocketHandler implements MessageComponentInterface
                 
             case 'users_list':
                 $this->sendToClient($from, $result['client_message']);
-                break;
-                
-            case 'pong':
-                $this->sendToClient($from, $result);
                 break;
         }
     }
@@ -144,20 +115,6 @@ class WebSocketHandler implements MessageComponentInterface
     {
         $users = $this->userManager->getAllUsers($this->clients);
         
-        // Додаємо інформацію про кімнати для кожного користувача
-        foreach ($users as &$user) {
-            // Знаходимо клієнта за іменем
-            $userClient = null;
-            foreach ($this->clients as $c) {
-                $clientUsername = $this->userManager->getUsername($c);
-                if ($clientUsername === $user['username']) {
-                    $userClient = $c;
-                    break;
-                }
-            }
-            $user['room'] = $userClient ? $this->roomManager->getClientRoom($userClient) : 'general';
-        }
-        
         $data = [
             'type' => 'users_list',
             'users' => $users,
@@ -173,9 +130,4 @@ class WebSocketHandler implements MessageComponentInterface
     {
         return count($this->clients);
     }
-
-    // public function getRoomsInfo()
-    // {
-    //     return $this->roomManager->getRoomsInfo();
-    // }
 } 

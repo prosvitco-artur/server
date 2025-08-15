@@ -7,8 +7,8 @@ use Ratchet\Http\HttpServer;
 use Ratchet\WebSocket\WsServer;
 use Server\WebSocketHandler;
 
-// Отримання порту з Heroku
-$port = getenv('PORT') ?: 8080;
+
+$port = 8080;
 $host = '0.0.0.0';
 $dev = false;
 
@@ -22,7 +22,6 @@ foreach ($argv as $arg) {
     }
 }
 
-// Налаштування для продакшену
 if (getenv('APP_ENV') === 'production') {
     error_reporting(0);
     ini_set('display_errors', 0);
@@ -35,10 +34,8 @@ if (getenv('APP_ENV') === 'production') {
 }
 
 try {
-    // Створюємо WebSocket сервер
     $handler = new WebSocketHandler();
 
-    // Створюємо HTTP сервер з WebSocket підтримкою
     $server = IoServer::factory(
         new HttpServer(
             new WsServer($handler)
@@ -48,19 +45,7 @@ try {
     );
 
     echo "🚀 WebSocket сервер запущено на {$host}:{$port}\n";
-    echo "📡 URL: ws://{$host}:{$port}\n";
 
-    if (getenv('APP_ENV') !== 'production') {
-        echo "⏹️  Для зупинки натисніть Ctrl+C\n\n";
-
-        if ($dev) {
-            echo "📊 Статистика:\n";
-            echo "   - Підключені клієнти: " . $handler->getConnectedClientsCount() . "\n";
-            // echo "   - Кімнати: " . json_encode($handler->getRoomsInfo()) . "\n\n";
-        }
-    }
-
-    // Запускаємо сервер
     $server->run();
     
 } catch (Exception $e) {

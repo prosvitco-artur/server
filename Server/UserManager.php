@@ -44,9 +44,4 @@ class UserManager
         }
         return $users;
     }
-
-    public function getClientUsernames()
-    {
-        return $this->clientUsernames;
-    }
 } 
